@@ -1,8 +1,7 @@
 var game, CELLSIZE;
 
 function setup() {
-  rectMode(CENTER);
-
+  rectMode(CENTER);  
   CELLSIZE = 20;
   game = createGame();
 }

@@ -21,7 +21,9 @@ class Configuration {
   }
 
   drawDots(type) {
-
+    for (var dot in this.dots) {
+      dot.draw(type);
+    }
   }
 }
 
@@ -32,8 +34,14 @@ class Posn {
     this.x = x;
     this.y = y;
   }
-  draw() {
-
+  draw(type) {
+    var cent = gridToCenterPx(new Posn(this.x, this.y));
+    fill(255, 245, 207);
+    if (type === "dot") {
+      circle(cent.x, cent.y, 4);
+    } else if (type === "power") {
+      circle(cent.x, cent.y, 10);
+    }
   }
 }
 
@@ -65,6 +73,7 @@ class Cell {
   draw() {
     var cent = gridToCenterPx(this.position);
     var x1, x2, y1, y2;
+    push();
     strokeWeight(2);
     stroke(25, 25, 166);
     for (var wall in this.walls) {
@@ -93,11 +102,10 @@ class Cell {
             y1 = cent.y + CELLSIZE / 2.0;
             y1 = cent.y + CELLSIZE / 2.0;
           break;
-        line(x1, x2, y1, y2);
       }
-
-      rect(this.position.x, this.position.y, 2, CELLSIZE);
+      line(x1, x2, y1, y2);
     }
+    pop();
   }
 }
 
@@ -148,13 +156,6 @@ class Pacman {
     }
   }
 }
-
-/* A Ghost-Type is one of:
- - GHOST-BLINKY
- - GHOST-PINKY
- - GHOST-INKY
- - GHOST-CLYDE
-Interpretation: The type of ghost it is. */
 
 /* (define-struct ghost [type direction position frightened scatter timer])
 
@@ -260,9 +261,7 @@ class PacmanGame {
     drawBoard(this.gc.board, this.gc.width, this.gc.height);
     this.pacman.draw();
     drawGhosts(this.ghosts);
-    this.gc.drawDots("dots");
-    this.gc.drawDots("powers");
-
-
+    this.gc.drawDots("dot");
+    this.gc.drawDots("power");
   }
 }
