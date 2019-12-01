@@ -1,15 +1,18 @@
 var game, CELLSIZE;
 
 function setup() {
-  rectMode(CENTER);  
+  createCanvas(520, 580);
+  rectMode(CENTER);
   CELLSIZE = 20;
   game = createGame();
 }
 
 function draw() {
+  
   // UPDATE GAME
   game.draw();
-
+  //fill(255, 0, 0);
+  //ellipse(200, 200, 100, 100);
 
   // DRAW GAME
 }
@@ -17,6 +20,7 @@ function draw() {
 function keyPressed() {
 
 }
+
 
 function gameOver() {
 
@@ -42,9 +46,9 @@ function createConfiguration() {
   var board = initializeBoard();
   var start = new Posn(12, 22); // pacman starts at (12, 22)
   var dots = initializeDots(); // regular dots
-  var powers = [new Posn(0, 2), new posn(0, 22), new Posn(25, 2), new Posn(25, 22)]; // power pellets
-  var ghostStarts = [new Posn(5, 4), new Posn(20, 4), new Posn(5, 20), new posn(20, 20)]; // ghost starting positions
-  return new Configuration(width, height, board, start, dots, powers, ghostStars);
+  var powers = [new Posn(0, 2), new Posn(0, 22), new Posn(25, 2), new Posn(25, 22)]; // power pellets
+  var ghostStarts = [new Posn(5, 4), new Posn(20, 4), new Posn(5, 20), new Posn(20, 20)]; // ghost starting positions
+  return new Configuration(width, height, board, start, dots, powers, ghostStarts);
 }
 
 function initializeDots() {
@@ -74,7 +78,7 @@ function initializeDots() {
     new Posn(14, 28), new Posn(15, 0), new Posn(15, 4), new Posn(15, 7), new Posn(15, 19), new Posn(15, 22),
     new Posn(15, 25), new Posn(15, 28), new Posn(16, 0), new Posn(16, 4), new Posn(16, 7), new Posn(16, 19),
     new Posn(16, 22), new Posn(16, 25), new Posn(16, 28), new Posn(17, 0), new Posn(17, 4), new Posn(17, 5),
-    new Pons(17, 6), new Posn(17, 7), new Posn(17, 19), new Posn(17, 22), new Posn(17, 23), new Posn(17, 24),
+    new Posn(17, 6), new Posn(17, 7), new Posn(17, 19), new Posn(17, 22), new Posn(17, 23), new Posn(17, 24),
     new Posn(17, 25), new Posn(17, 28), new Posn(18, 0), new Posn(18, 4), new Posn(18, 19), new Posn(18, 22),
     new Posn(18, 28), new Posn(19, 0), new Posn(19, 4), new Posn(19, 19), new Posn(19, 22), new Posn(19, 28),
     new Posn(20, 0), new Posn(20, 1), new Posn(20, 2), new Posn(20, 3), new Posn(20, 4), new Posn(20, 5),

@@ -18,12 +18,19 @@ class Configuration {
     this.dots = dots;
     this.powers = powers;
     this.ghostStarts = ghostStarts;
-  }
 
-  drawDots(type) {
-    for (var dot in this.dots) {
-      dot.draw(type);
-    }
+    this.drawDots = function (type) {
+      if (type === "dot") {
+        for (var i = 0; i < this.dots.length; i++) {
+          this.dots[i].draw("dot");
+        }
+      }
+      else if (type === "power") {
+        for (var i = 0; i < this.powers.length; i++) {
+          this.powers[i].draw("power");
+        }
+      }
+    };
   }
 }
 
@@ -33,15 +40,17 @@ class Posn {
   constructor(x, y) {
     this.x = x;
     this.y = y;
-  }
-  draw(type) {
-    var cent = gridToCenterPx(new Posn(this.x, this.y));
-    fill(255, 245, 207);
-    if (type === "dot") {
-      circle(cent.x, cent.y, 4);
-    } else if (type === "power") {
-      circle(cent.x, cent.y, 10);
-    }
+
+    this.draw = function (type) {
+      var cent = gridToCenterPx(new Posn(this.x, this.y));
+      fill(255, 245, 207);
+      if (type === "dot") {
+        circle(cent.x, cent.y, 4);
+      }
+      else if (type === "power") {
+        circle(cent.x, cent.y, 10);
+      }
+    };
   }
 }
 
@@ -53,9 +62,10 @@ function drawBoard(listofCells, width, height) {
   fill(0);
   rect(width / 2.0 * CELLSIZE, height / 2.0 * CELLSIZE, width * CELLSIZE, height * CELLSIZE);
   //CELLS
-  for (var cell in listofCells) {
-    cell.draw();
+  for (var i = 0; i < listofCells.length; i++) {
+    listofCells[i].draw();
   }
+
 }
 
 /* (define-struct pair [position walls])
@@ -68,44 +78,44 @@ class Cell {
   constructor(position, walls) {
     this.position = position;
     this.walls = walls;
-  }
 
-  draw() {
-    var cent = gridToCenterPx(this.position);
-    var x1, x2, y1, y2;
-    push();
-    strokeWeight(2);
-    stroke(25, 25, 166);
-    for (var wall in this.walls) {
-      switch (wall) {
-        case "left":
-          x1 = cent.x - CELLSIZE / 2.0;
-          x2 = cent.x - CELLSIZE / 2.0;
-          y1 = cent.y - CELLSIZE / 2.0;
-          y1 = cent.y + CELLSIZE / 2.0;
-          break;
-        case "right":
+    this.draw = function () {
+      var cent = gridToCenterPx(this.position);
+      var x1, x2, y1, y2;
+      push();
+      strokeWeight(2);
+      stroke(25, 25, 166);
+      for (var i = 0; i < this.walls.length; i++) {
+        switch (this.walls[i]) {
+          case "left":
+            x1 = cent.x - CELLSIZE / 2.0;
+            x2 = cent.x - CELLSIZE / 2.0;
+            y1 = cent.y - CELLSIZE / 2.0;
+            y2 = cent.y + CELLSIZE / 2.0;
+            break;
+          case "right":
             x1 = cent.x + CELLSIZE / 2.0;
             x2 = cent.x + CELLSIZE / 2.0;
             y1 = cent.y - CELLSIZE / 2.0;
-            y1 = cent.y + CELLSIZE / 2.0;
-          break;
-        case "up":
+            y2 = cent.y + CELLSIZE / 2.0;
+            break;
+          case "up":
             x1 = cent.x - CELLSIZE / 2.0;
             x2 = cent.x + CELLSIZE / 2.0;
             y1 = cent.y - CELLSIZE / 2.0;
-            y1 = cent.y - CELLSIZE / 2.0;
-          break;
-        case "down":
+            y2 = cent.y - CELLSIZE / 2.0;
+            break;
+          case "down":
             x1 = cent.x - CELLSIZE / 2.0;
             x2 = cent.x + CELLSIZE / 2.0;
             y1 = cent.y + CELLSIZE / 2.0;
-            y1 = cent.y + CELLSIZE / 2.0;
-          break;
+            y2 = cent.y + CELLSIZE / 2.0;
+            break;
+        }
+        line(x1, y1, x2, y2);
       }
-      line(x1, x2, y1, y2);
-    }
-    pop();
+      pop();
+    };
   }
 }
 
@@ -114,7 +124,6 @@ class Cell {
  - "down"
  - "left"
  - "right" */
-
 /* (define-struct pacman [mouth direction position lives])
 
 A Pacman is a new Pacman(Boolean, Dir, Posn, Natural)
@@ -129,31 +138,32 @@ class Pacman {
     this.direction = direction;
     this.position = position;
     this.lives = lives;
-  }
 
-  draw() {
-    fill(255, 255, 0);
-    var cent = gridToCenterPx(this.position);
-    circle(cent.x, cent.y, 16);
-    if (this.mouth) {
-      push();
-      switch (this.direction) {
-        case "left":
-          break;
-        case "down":
-          rotate(0.50 * PI);
-          break;
-        case "right":
-          rotate(PI);
-          break;
-        case "up":
-          rotate(1.50 * PI);
-          break;
+    this.draw = function () {
+      fill(255, 255, 0);
+      var cent = gridToCenterPx(this.position);
+      circle(cent.x, cent.y, 16);
+      if (this.mouth) {
+        push();
+        switch (this.direction) {
+          case "left":
+            break;
+          case "down":
+            rotate(0.50 * PI);
+            break;
+          case "right":
+            rotate(PI);
+            break;
+          case "up":
+            rotate(1.50 * PI);
+            break;
+        }
+        //mouth
+        fill(0);
+        arc(cent.x, cent.y, 16, 16, (5.0 / 6.0) * PI, (7.0 / 6.0) * PI);
+        pop();
       }
-      fill(0);
-      arc(cent.x, cent.y, 8, 8, (5.0 / 6.0) * PI, (7.0 / 6.0) * PI);
-      pop();
-    }
+    };
   }
 }
 
@@ -175,71 +185,67 @@ class Ghost {
     this.frightened = frightened;
     this.scatter = scatter;
     this.timer = timer;
-  }
 
-  draw() {
-    //COLOR
-    if (this.frightened > 0) {
-      fill(0, 0, 255);
-    } else {
-      switch (this.type) {
-        case "blinky":
-          fill(255, 0, 0);
+    this.draw = function () {
+      //COLOR
+      if (this.frightened > 0) {
+        fill(0, 0, 255);
+      }
+      else {
+        switch (this.type) {
+          case "blinky":
+            fill(255, 0, 0);
+            break;
+          case "pinky":
+            fill(255, 184, 255);
+            break;
+          case "inky":
+            fill(0, 255, 255);
+            break;
+          case "clyde":
+            fill(255, 169, 48);
+            break;
+        }
+        //BODY
+        var cent = gridToCenterPx(this.position);
+        rect(cent.x, cent.y, CELLSIZE * 0.75, CELLSIZE * 0.8, CELLSIZE / 2.0, CELLSIZE / 2.0, 0, 0);
+      }
+      //SPIKES
+      fill(0);
+      triangle(cent.x - CELLSIZE * 0.13, cent.y + CELLSIZE * 0.4, cent.x + CELLSIZE * 0.13, cent.y + CELLSIZE * 0.4, cent.x, cent.y + CELLSIZE * 0.2);
+      triangle(cent.x - CELLSIZE * 0.37, cent.y + CELLSIZE * 0.4, cent.x - CELLSIZE * 0.13, cent.y + CELLSIZE * 0.4, cent.x - CELLSIZE * 0.25, cent.y + CELLSIZE * 0.2);
+      triangle(cent.x + CELLSIZE * 0.13, cent.y + CELLSIZE * 0.4, cent.x + CELLSIZE * 0.37, cent.y + CELLSIZE * 0.4, cent.x + CELLSIZE * 0.25, cent.y + CELLSIZE * 0.2);
+      //EYES
+      fill(255);
+      ellipse(cent.x - CELLSIZE * 0.15, cent.y - CELLSIZE * 0.075, CELLSIZE * .175, CELLSIZE * .233);
+      ellipse(cent.x + CELLSIZE * 0.15, cent.y - CELLSIZE * 0.075, CELLSIZE * .175, CELLSIZE * .233);
+      //PUPILS
+      push();
+      switch (this.direction) {
+        case "left":
+          translate(-CELLSIZE * 0.188, -CELLSIZE * 0.075);
           break;
-        case "pinky":
-          fill(255, 184, 255);
+        case "right":
+          translate(-CELLSIZE * 0.111, -CELLSIZE * 0.075);
           break;
-        case "inky":
-          fill(0, 255, 255);
+        case "up":
+          translate(-CELLSIZE * 0.15, -CELLSIZE * 0.139);
           break;
-        case "clyde":
-          fill(255, 169, 48);
+        case "down":
+          translate(-CELLSIZE * 0.15, -CELLSIZE * 0.012);
           break;
       }
-      //BODY
-      var cent = gridToCenterPx(this.position);
-      rect(centx, centy, CELLSIZE * 0.75, CELLSIZE * 0.8, CELLSIZE / 2.0, CELLSIZE / 2.0, 0, 0);
-    }
-    //SPIKES
-    fill(0);
-    triangle(cent.x - CELLSIZE * 0.13, cent.y + CELLSIZE * 0.4,
-      cent.x + CELLSIZE * 0.13, cent.y + CELLSIZE * 0.4,
-      cent.x, cent.y + CELLSIZE * 0.2);
-
-    triangle(cent.x - CELLSIZE * 0.37, cent.y + CELLSIZE * 0.4,
-      cent.x - CELLSIZE * 0.13, cent.y + CELLSIZE * 0.4,
-      cent.x - CELLSIZE * 0.25, cent.y + CELLSIZE * 0.2);
-
-    triangle(cent.x + CELLSIZE * 0.13, cent.y + CELLSIZE * 0.4,
-      cent.x + CELLSIZE * 0.37, cent.y + CELLSIZE * 0.4,
-      cent.x + CELLSIZE * 0.25, cent.y + CELLSIZE * 0.2);
-    //EYES
-    ellipse(cent.x - CELLSIZE * 0.15, cent.y - CELLSIZE * 0.075, CELLSIZE * .175, CELLSIZE * .233);
-    ellipse(cent.x + CELLSIZE * 0.15, cent.y - CELLSIZE * 0.075, CELLSIZE * .175, CELLSIZE * .233);
-    //PUPILS
-    push();
-    switch (this.direction) {
-      case "left":
-        translate(-CELLSIZE * 0.188, -CELLSIZE * 0.075);
-        break;
-      case "right":
-        translate(-CELLSIZE * 0.111, -CELLSIZE * 0.075);
-        break;
-      case "up":
-        translate(-CELLSIZE * 0.15, -CELLSIZE * 0.139);
-        break;
-      case "down":
-        translate(-CELLSIZE * 0.15, -CELLSIZE * 0.012);
-        break;
-    }
-    circle(cent.x, cent.y, CELLSIZE * 0.1);
-    pop();
+      fill(0);
+      circle(cent.x, cent.y, CELLSIZE * 0.1);
+      circle(cent.x + CELLSIZE * 0.3, cent.y, CELLSIZE * 0.1);
+      pop();
+    };
   }
 }
 
 function drawGhosts(listOfGhosts) {
-  for (var ghost in listOfGhosts) {
-    ghost.draw();
+  for (var i = 0; i < listOfGhosts.length; i++) {
+    listOfGhosts[i].draw();
   }
 }
 
@@ -255,13 +261,14 @@ class PacmanGame {
     this.pacman = pacman;
     this.ghosts = ghosts;
     this.gc = gc;
-  }
-
-  draw() {
-    drawBoard(this.gc.board, this.gc.width, this.gc.height);
-    this.pacman.draw();
-    drawGhosts(this.ghosts);
-    this.gc.drawDots("dot");
-    this.gc.drawDots("power");
+    
+    this.draw = function () {
+      drawBoard(this.gc.board, this.gc.width, this.gc.height);
+      this.gc.drawDots("dot");
+      this.gc.drawDots("power");
+      this.pacman.draw();
+      drawGhosts(this.ghosts);
+    };
   }
 }
+
