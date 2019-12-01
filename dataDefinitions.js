@@ -66,6 +66,9 @@ class Posn {
             case "down":
                 this.y = constrain(this.y + 1, 0, height - 1);
                 break;
+            default:
+                console.log("incorrect direction:" + direction);
+                break;
         }
     };
   }
@@ -260,9 +263,98 @@ class Ghost {
       pop();
     };
 
-    this.update = function () {
+    this.update = function (pacman, gc) {
+        //update direction
+        var goal;
+        var currentCell = getCell(this.position, gc.board);
+        var possibleDirections = ["left", "right", "up", "down"];
+        for (var i = 0; i < possibleDirections.length; i++) {
+            var direction = possibleDirections[i];
+            if ((!(direction === reverseDirection(this.direction)))
+                && (!(currentCell.walls.includes(direction)))) {
+                    possibleDirections.splice(i, 1);
+                }
+        }
+        if (this.scatter) { //scatter mode
+            switch (this.type) {
+                case "blinky":
+                    goal = new Posn(0, 0);
+                    break;
+                case "pinky":
+                    goal = new Posn(gc.width - 1, 0);
+                    break;
+                case "inky":
+                    goal = new Posn(0, gc.height - 1);
+                    break;
+                case "clyde":
+                    goal = new Posn(gc.width - 1, gc.height - 1);
+                    break;
+            }
+        } else { //chase mode
+            switch (this.type) {
+                case "blinky":
+                    goal = pacman.position;
+                    break;
+                case "pinky":
+                    goal = pacman.position.update(pacman.direction, gc.width, gc.height);
+                    goal.update(pacman.direction, gc.width, gc.height);
+                    goal.update(pacman.direction, gc.width, gc.height);
+                    goal.update(pacman.direction, gc.width, gc.height);
+                    break;
+                case "inky":
+                    goal = pacman.position.update(reverseDirection(pacman.direction), gc.width, gc.height);
+                    goal.update(reverseDirection(pacman.direction), gc.width, gc.height);
+                    goal.update(reverseDirection(pacman.direction), gc.width, gc.height);
+                    goal.update(reverseDirection(pacman.direction), gc.width, gc.height);
+                    break;
+                case "clyde":
+                    if (dist(this.position.x, this.position.y, pacman.position.x, pacman.position.y) > 8) {
+                        goal = pacman.position;
+                    } else {
+                        goal = new Posn(gc.width - 1, gc.height - 1);
+                    }
+                    break;
+            }
+        }
+        this.direction = this.pickNewDirection(goal, possibleDirections, gc);
+        //move
+        this.position.update(this.direction, gc.width, gc.height);
+        //clock
+        if (this.scatter && (this.timer >= GHOSTSCATTERTIME)) {
+            this.frightened = max(0, this.frightened - 1);
+            this.scatter = false;
+            this.timer = 0;
+        } else if (!this.scatter && (this.timer >= GHOSTCHASETIME)) {
+            this.frightened = max(0, this.frightened - 1);
+            this.scatter = true;
+            this.timer = 0;
+        } else {
+            this.frightened = max(0, this.frightened - 1);
+            this.timer += 1;
+        }
+    };
+    
+    //picks direction which minimizes distance to goal
+    this.pickNewDirection = function (goal, possibleDirections, gc) {
+        var min = this.distanceToGoal(goal, possibleDirections[0], gc);
+        var minIndex = 0;
 
-    }
+        for (var i = 1; i < possibleDirections.length; i++) {
+            var distance = this.distanceToGoal(goal, possibleDirections[i], gc)
+            if (distance < min) {
+                minIndex = i;
+                min = distance;
+            }
+        }
+    return possibleDirections[minIndex];
+    };
+
+    //finds distance to goal if move in given direction
+    this.distanceToGoal = function (goal, direction, gc) {
+        var newPosition = this.position;
+        newPosition.update(direction, gc.width, gc.height);
+        return dist(newPosition.x, newPosition.y, goal.x, goal.y);
+    };
   }
 }
 
@@ -289,7 +381,7 @@ class PacmanGame {
 
     this.update = function () {
       this.pacman.update(this.gc);
-      updateGhosts(this.ghosts);
+      updateGhosts(this.ghosts, this.pacman, this.gc);
       checkCollisions(this.pacman, this.ghosts, this.gc.dots, this.gc.powers);
     };
   }

@@ -1,11 +1,13 @@
-var game, CELLSIZE;
+var game, CELLSIZE, GHOSTSCATTERTIME, GHOSTCHASETIME;
 
 function setup() {
   createCanvas(520, 580);
   rectMode(CENTER);
-  CELLSIZE = 20;
-  game = createGame();
   frameRate(5);
+  CELLSIZE = 20;
+  GHOSTSCATTERTIME = 5;
+  GHOSTCHASETIME = 20;
+  game = createGame();
 }
 
 function draw() {

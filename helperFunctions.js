@@ -20,8 +20,10 @@ function drawBoard(listofCells, width, height) {
   }
 
   
-function updateGhosts(listOfGhosts) {
-
+function updateGhosts(listOfGhosts, pacman, gc) {
+    for (var i = 0; i < listOfGhosts.length; i++) {
+        listOfGhosts[i].update(pacman, gc);
+    }
 }
 
 // finds the cell with the given position
@@ -39,6 +41,19 @@ function getCell(posn, board) {
 //are two posns equal?
 function posnEqual(posn1, posn2) {
     return ((posn1.x === posn2.x) & (posn1.y === posn2.y));
+}
+
+function reverseDirection(direction) {
+    switch (direction) {
+        case "left":
+            return "right";
+        case "right":
+            return "left";
+        case "up":
+            return "down";
+        case "down":
+            return "up";
+    }
 }
 
   // createGame : creates the initial game
