@@ -52,25 +52,27 @@ class Posn {
       }
     };
 
-    this.update = function (direction) {
-
+    this.update = function (direction, width, height) {
+        switch (direction) {
+            case "left":
+                this.x = constrain(this.x - 1, 0, width - 1);
+                break;
+            case "right":
+                this.x = constrain(this.x + 1, 0, width - 1);
+                break;
+            case "up":
+                this.y = constrain(this.y - 1, 0, height - 1);
+                break;
+            case "down":
+                this.y = constrain(this.y + 1, 0, height - 1);
+                break;
+        }
     };
   }
 }
 
 /* A Board is a [List-of Cell]
 Interpretation: A list of cells on the board. */
-
-function drawBoard(listofCells, width, height) {
-  //BACKGROUND
-  fill(0);
-  rect(width / 2.0 * CELLSIZE, height / 2.0 * CELLSIZE, width * CELLSIZE, height * CELLSIZE);
-  //CELLS
-  for (var i = 0; i < listofCells.length; i++) {
-    listofCells[i].draw();
-  }
-
-}
 
 /* (define-struct pair [position walls])
 
@@ -169,8 +171,17 @@ class Pacman {
       }
     };
 
-    this.update = function () {
+    this.canMove = function (gc) {
+        var currentCell = getCell(this.position, gc.board);
+        return (!currentCell.walls.includes(this.direction));
+    }
 
+    this.update = function (gc) {
+        if (this.canMove(gc)) { //can move
+            this.mouth = ! this.mouth; //change mouth
+            this.position.update(this.direction, gc.width, gc.height); //move
+        }
+        
     };
   }
 }
@@ -255,12 +266,6 @@ class Ghost {
   }
 }
 
-function drawGhosts(listOfGhosts) {
-  for (var i = 0; i < listOfGhosts.length; i++) {
-    listOfGhosts[i].draw();
-  }
-}
-
 /* (define-struct game-of-pacman [pacman ghosts gc])
 
 A GameOfPacman is a new PacmanGame(Pacman, [List-of Ghost], GameConfiguration)
@@ -283,7 +288,9 @@ class PacmanGame {
     };
 
     this.update = function () {
-      this.pacman.update();
+      this.pacman.update(this.gc);
+      updateGhosts(this.ghosts);
+      checkCollisions(this.pacman, this.ghosts, this.gc.dots, this.gc.powers);
     };
   }
 }
