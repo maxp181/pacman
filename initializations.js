@@ -63,25 +63,40 @@ class Cell {
   }
 
   draw() {
+    var cent = gridToCenterPx(this.position);
+    var x1, x2, y1, y2;
+    strokeWeight(2);
+    stroke(25, 25, 166);
     for (var wall in this.walls) {
-      push();
       switch (wall) {
         case "left":
+          x1 = cent.x - CELLSIZE / 2.0;
+          x2 = cent.x - CELLSIZE / 2.0;
+          y1 = cent.y - CELLSIZE / 2.0;
+          y1 = cent.y + CELLSIZE / 2.0;
           break;
         case "right":
-
+            x1 = cent.x + CELLSIZE / 2.0;
+            x2 = cent.x + CELLSIZE / 2.0;
+            y1 = cent.y - CELLSIZE / 2.0;
+            y1 = cent.y + CELLSIZE / 2.0;
           break;
         case "up":
-
+            x1 = cent.x - CELLSIZE / 2.0;
+            x2 = cent.x + CELLSIZE / 2.0;
+            y1 = cent.y - CELLSIZE / 2.0;
+            y1 = cent.y - CELLSIZE / 2.0;
           break;
         case "down":
-
+            x1 = cent.x - CELLSIZE / 2.0;
+            x2 = cent.x + CELLSIZE / 2.0;
+            y1 = cent.y + CELLSIZE / 2.0;
+            y1 = cent.y + CELLSIZE / 2.0;
           break;
-
+        line(x1, x2, y1, y2);
       }
 
       rect(this.position.x, this.position.y, 2, CELLSIZE);
-      pop();
     }
   }
 }
