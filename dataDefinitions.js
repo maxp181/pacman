@@ -338,9 +338,10 @@ class Ghost {
     this.pickNewDirection = function (goal, possibleDirections, gc) {
         var min = this.distanceToGoal(goal, possibleDirections[0], gc);
         var minIndex = 0;
+        var distance;
 
         for (var i = 1; i < possibleDirections.length; i++) {
-            var distance = this.distanceToGoal(goal, possibleDirections[i], gc)
+            distance = this.distanceToGoal(goal, possibleDirections[i], gc)
             if (distance < min) {
                 minIndex = i;
                 min = distance;
@@ -382,7 +383,7 @@ class PacmanGame {
     this.update = function () {
       this.pacman.update(this.gc);
       updateGhosts(this.ghosts, this.pacman, this.gc);
-      checkCollisions(this.pacman, this.ghosts, this.gc.dots, this.gc.powers);
+      //checkCollisions(this.pacman, this.ghosts, this.gc.dots, this.gc.powers);
     };
   }
 }
