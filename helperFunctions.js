@@ -10,7 +10,6 @@ function checkCollisions(pacman, listOfGhosts, gc) {
             console.log("collision");
             // pacman eats ghost -> teleport back to start
             if (listOfGhosts[i].frightened > 0) {
-                listOfGhosts[i].direction = "left";
                 switch (listOfGhosts[i].type) {
                     case "blinky":
                         listOfGhosts[i].position = new Posn(5, 4);
@@ -24,10 +23,9 @@ function checkCollisions(pacman, listOfGhosts, gc) {
                     case "pink":
                         listOfGhosts[i].position = new Posn(20, 20);
                         break;
-
                 }
-                //listOfGhosts[i].position = gc.ghostStarts[i];
                 listOfGhosts[i].frightened = 0;
+                listOfGhosts[i].direction = "left";
                 listOfGhosts[i].scatter = true;
                 listOfGhosts[i].timer = 0;
             } else { // ghost eats pacman
