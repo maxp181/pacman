@@ -1,4 +1,4 @@
-var game, CELLSIZE, GHOSTSCATTERTIME, GHOSTCHASETIME;
+var game, CELLSIZE, GHOSTSCATTERTIME, GHOSTCHASETIME, gameOver;
 
 function setup() {
   createCanvas(520, 580);
@@ -13,6 +13,8 @@ function setup() {
 function draw() {
   // UPDATE GAME
   game.update();
+  gameOver = gameOver(game);
+  console.log(gameOver);
   // DRAW GAME
   game.draw();
 }
@@ -41,7 +43,14 @@ function keyPressed() {
   }
 }
 
-
-function gameOver() {
-
+// gameOver : PacmanGame -> Number
+// determines if the game is over: 0 = not, 1 = win, -1 = lose
+function gameOver(game) {
+  if (game.pacman.lives === 0) {
+    return -1;
+  } else if (game.gc.dots.length === 0 && game.gc.powers.length === 0) {
+    return 1;
+  } else {
+    return 0;
+  }
 }
