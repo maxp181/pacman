@@ -1,48 +1,56 @@
 function checkCollisions(pacman, listOfGhosts, gc) {
     //ghost collisions
     var lastPos;
+    var currentPos;
+    //var listOfGhostPos = [];
+    lastPos = new Posn(pacman.position.x, pacman.position.y);
+    lastPos.update(reverseDirection(pacman.direction), gc.width, gc.height);
+    currentPos = new Posn(pacman.position.x, pacman.position.y);
+    
     for (var i = 0; i < listOfGhosts.length; i++) {
-        lastPos = new Posn(pacman.position.x, pacman.position.y);
-        lastPos.update(reverseDirection(pacman.direction), gc.width, gc.height);
         //if collision
         if (posnEqual(pacman.position, listOfGhosts[i].position)
-            || posnEqual(lastPos, listOfGhosts[i].position)) {
-            console.log("collision");
+            || posnEqual(lastPos, listOfGhosts[i].position)
+            ) {
+            //console.log("collision");
             // pacman eats ghost -> teleport back to start
             if (listOfGhosts[i].frightened > 0) {
                 switch (listOfGhosts[i].type) {
                     case "blinky":
-                        listOfGhosts[i].position = new Posn(5, 4);
+                        listOfGhosts[i].position = new Posn(12, 13);
                         break;
                     case "clyde":
-                        listOfGhosts[i].position = new Posn(20, 4);
+                        listOfGhosts[i].position = new Posn(13, 14);
                         break;
                     case "inky":
-                        listOfGhosts[i].position = new Posn(5, 20);
+                        listOfGhosts[i].position = new Posn(12, 14);
                         break;
-                    case "pink":
-                        listOfGhosts[i].position = new Posn(20, 20);
+                    case "pinky":
+                        listOfGhosts[i].position = new Posn(13, 13);
                         break;
                 }
+
                 listOfGhosts[i].frightened = 0;
                 listOfGhosts[i].direction = "left";
                 listOfGhosts[i].scatter = true;
-                listOfGhosts[i].timer = 0;
+                listOfGhosts[i].timer = 0;          
             } else { // ghost eats pacman
-                //reset pacman
-                pacman.mouth = true;
-                pacman.direction = "";
-                pacman.position = new Posn(12, 22);
                 pacman.lives = max(pacman.lives - 1, 0);
-                //reset ghosts
-                listOfGhosts[0] = new Ghost("blinky", "", new Posn(5, 4), 0, true, 0);
-                listOfGhosts[1] = new Ghost("clyde", "", new Posn(20, 4), 0, true, 0);
-                listOfGhosts[2] = new Ghost("inky", "", new Posn(5, 20), 0, true, 0);
-                listOfGhosts[3] = new Ghost("pinky", "", new Posn(20, 20), 0, true, 0);
-
+                if (pacman.lives > 0) {
+                    //reset pacman
+                    pacman.mouth = true;
+                    pacman.direction = "";
+                    pacman.position = new Posn(12, 22);
+                    //reset ghosts
+                    listOfGhosts[0] = new Ghost("blinky", "", new Posn(12, 13), 0, true, 0);
+                    listOfGhosts[1] = new Ghost("clyde", "", new Posn(13, 14), 0, true, 0);
+                    listOfGhosts[2] = new Ghost("inky", "", new Posn(12, 14), 0, true, 0);
+                    listOfGhosts[3] = new Ghost("pinky", "", new Posn(13, 13), 0, true, 0);
+                }
             }
         }
-    }
+    } 
+
     //dot collisions
     for (var i = 0; i < gc.dots.length; i++) {
         if (posnEqual(pacman.position, gc.dots[i])) {
@@ -119,10 +127,10 @@ function reverseDirection(direction) {
 function createGame() {
     var gc = createConfiguration();
     return new PacmanGame(new Pacman(true, "", gc.start, 3),
-        [new Ghost("blinky", "", new Posn(5, 4), 0, true, 0),
-        new Ghost("clyde", "", new Posn(20, 4), 0, true, 0),
-        new Ghost("inky", "", new Posn(5, 20), 0, true, 0),
-        new Ghost("pinky", "", new Posn(20, 20), 0, true, 0)
+        [new Ghost("blinky", "", new Posn(12, 13), 0, true, 0),
+        new Ghost("clyde", "", new Posn(13, 14), 0, true, 0),
+        new Ghost("inky", "", new Posn(12, 14), 0, true, 0),
+        new Ghost("pinky", "", new Posn(13, 13), 0, true, 0)
         ],
         gc);
 }
@@ -509,8 +517,8 @@ function initializeBoard() {
     new Cell(new Posn(9, 12), ["up", "left"]),
     new Cell(new Posn(10, 12), ["up"]),
     new Cell(new Posn(11, 12), ["up"]),
-    new Cell(new Posn(12, 12), ["up"]),
-    new Cell(new Posn(13, 12), ["up"]),
+    new Cell(new Posn(12, 12), ["special"]),
+    new Cell(new Posn(13, 12), ["special"]),
     new Cell(new Posn(14, 12), ["up"]),
     new Cell(new Posn(15, 12), ["up"]),
     new Cell(new Posn(16, 12), ["up", "right"]),

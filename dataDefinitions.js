@@ -68,9 +68,6 @@ class Posn {
                     break;
                 case "":
                     break;
-                default:
-                    console.log("incorrect direction:" + direction);
-                    break;
             }
         };
     }
@@ -94,9 +91,9 @@ class Cell {
             var cent = gridToCenterPx(this.position);
             var x1, x2, y1, y2;
             push();
-            strokeWeight(2);
-            stroke(25, 25, 166);
             for (var i = 0; i < this.walls.length; i++) {
+                strokeWeight(2);
+                stroke(25, 25, 166);
                 switch (this.walls[i]) {
                     case "left":
                         x1 = cent.x - CELLSIZE / 2.0;
@@ -121,6 +118,14 @@ class Cell {
                         x2 = cent.x + CELLSIZE / 2.0;
                         y1 = cent.y + CELLSIZE / 2.0;
                         y2 = cent.y + CELLSIZE / 2.0;
+                        break;
+                    case "special":
+                        x1 = cent.x - CELLSIZE / 2.0;
+                        x2 = cent.x + CELLSIZE / 2.0;
+                        y1 = cent.y - CELLSIZE / 2.0;
+                        y2 = cent.y - CELLSIZE / 2.0;
+                        strokeWeight(1);
+                        stroke(255);
                         break;
                 }
                 line(x1, y1, x2, y2);
@@ -280,7 +285,12 @@ class Ghost {
                     possibleDirections.push(allDirections[i]);
                 }
             }
-            if (this.scatter) { //scatter mode
+
+            //if in box
+            if (this.position.x >= 9 && this.position.x <= 16 &&
+                this.position.y >= 12 && this.position.x <= 15) {
+                goal = new Posn(12, 11);
+            } else if (this.scatter) { //scatter mode
                 switch (this.type) {
                     case "blinky":
                         goal = new Posn(0, 0);
@@ -298,17 +308,17 @@ class Ghost {
             } else { //chase mode
                 switch (this.type) {
                     case "blinky":
-                        goal = pacman.position;
+                        goal = new Posn(pacman.position.x, pacman.position.y)
                         break;
                     case "pinky":
-                        goal = pacman.position;
+                        goal = new Posn(pacman.position.x, pacman.position.y);
                         goal.update(pacman.direction, gc.width, gc.height);
                         goal.update(pacman.direction, gc.width, gc.height);
                         goal.update(pacman.direction, gc.width, gc.height);
                         goal.update(pacman.direction, gc.width, gc.height);
                         break;
                     case "inky":
-                        goal = pacman.position;
+                        goal = new Posn(pacman.position.x, pacman.position.y)
                         goal.update(reverseDirection(pacman.direction), gc.width, gc.height);
                         goal.update(reverseDirection(pacman.direction), gc.width, gc.height);
                         goal.update(reverseDirection(pacman.direction), gc.width, gc.height);
@@ -316,7 +326,7 @@ class Ghost {
                         break;
                     case "clyde":
                         if (dist(this.position.x, this.position.y, pacman.position.x, pacman.position.y) > 8) {
-                            goal = pacman.position;
+                            goal = new Posn(pacman.position.x, pacman.position.y)
                         } else {
                             goal = new Posn(gc.width - 1, gc.height - 1);
                         }
@@ -381,6 +391,10 @@ class PacmanGame {
 
         this.draw = function () {
             drawBoard(this.gc.board, this.gc.width, this.gc.height);
+            if (this.pacman.direction === "" && this.pacman.lives > 0) {
+                fill(255, 255, 0);
+                text("Ready!", width / 2 - 35, height / 2 - 62.5);
+            }
             this.gc.drawDots("dot");
             this.gc.drawDots("power");
             this.pacman.draw();
@@ -391,9 +405,10 @@ class PacmanGame {
             this.pacman.update(this.gc);
             if (this.pacman.direction != "") {
                 updateGhosts(this.ghosts, this.pacman, this.gc);
+                checkCollisions(this.pacman, this.ghosts, this.gc);
             }
             //checkCollisions(this.pacman, this.ghosts, this.gc.dots, this.gc.powers, this.gc.ghostStarts, this.gc.start);
-            checkCollisions(this.pacman, this.ghosts, this.gc);
+            
         };
     }
 }
