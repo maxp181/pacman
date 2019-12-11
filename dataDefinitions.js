@@ -426,15 +426,22 @@ class PacmanGame {
             // CHECK COLLISIONS BEFORE MOVING
             checkCollisions(this.pacman, this.ghosts, this.gc);
 
-            var currentGhosts = this.ghosts;
-            var currentPos = pacman.position;
-
+            for (var i = 0; i < this.ghosts; i++) {
+                if (swappingPositions(pacman.position, pacman.direction, this.ghosts[i].position, this.ghosts[i].direction, gc)) {
+                    this.pacman.update(this.gc);
+                    checkCollisions(this.pacman, this.ghosts, this.gc);
+                    //updateGhosts(this.ghosts, this.pacman, this.gc);
+                    break;
+                }
+            }
+            
             // UPDATE
-            if (this.pacman.direction != "") {
+            if (this.pacman.direction != "" && this.pacman.lives > 0) {
                 updateGhosts(this.ghosts, this.pacman, this.gc);
+                this.pacman.update(this.gc);
                 //checkCollisions(this.pacman, this.ghosts, this.gc);
             }
-            this.pacman.update(this.gc);
+
 
             // CHECK IF PACMAN AND GHOST PASSED EACH OTHER
             
