@@ -425,7 +425,8 @@ class PacmanGame {
         this.update = function () {
             // CHECK COLLISIONS BEFORE MOVING
             checkCollisions(this.pacman, this.ghosts, this.gc);
-
+            
+            // CHECK IF PACMAN AND GHOST PASSED EACH OTHER
             for (var i = 0; i < this.ghosts; i++) {
                 if (swappingPositions(pacman.position, pacman.direction, this.ghosts[i].position, this.ghosts[i].direction, gc)) {
                     this.pacman.update(this.gc);
@@ -443,7 +444,7 @@ class PacmanGame {
             }
 
 
-            // CHECK IF PACMAN AND GHOST PASSED EACH OTHER
+           
             
             //checkCollisions(this.pacman, this.ghosts, this.gc.dots, this.gc.powers, this.gc.ghostStarts, this.gc.start);
             

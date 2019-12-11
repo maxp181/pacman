@@ -6,13 +6,13 @@ function checkCollisions(pacman, listOfGhosts, gc) {
     lastPos = new Posn(pacman.position.x, pacman.position.y);
     lastPos.update(reverseDirection(pacman.direction), gc.width, gc.height);
     currentPos = new Posn(pacman.position.x, pacman.position.y);
-    
+
     for (var i = 0; i < listOfGhosts.length; i++) {
         //if collision
         if (posnEqual(pacman.position, listOfGhosts[i].position)
             //|| swappingPositions(pacman.position, pacman.direction, listOfGhosts[i].position, listOfGhosts[i].direction, gc)
             //|| posnEqual(lastPos, listOfGhosts[i].position)
-            ) {
+        ) {
             //console.log("collision");
             // pacman eats ghost -> teleport back to start
             if (listOfGhosts[i].frightened > 0) {
@@ -34,7 +34,7 @@ function checkCollisions(pacman, listOfGhosts, gc) {
                 listOfGhosts[i].frightened = 0;
                 listOfGhosts[i].direction = "left";
                 listOfGhosts[i].scatter = true;
-                listOfGhosts[i].timer = 0;          
+                listOfGhosts[i].timer = 0;
             } else { // ghost eats pacman
                 pacman.lives = max(pacman.lives - 1, 0);
                 if (pacman.lives > 0) {
@@ -50,7 +50,7 @@ function checkCollisions(pacman, listOfGhosts, gc) {
                 }
             }
         }
-    } 
+    }
 
     //dot collisions
     for (var i = 0; i < gc.dots.length; i++) {
@@ -73,11 +73,31 @@ function checkCollisions(pacman, listOfGhosts, gc) {
 }
 
 function swappingPositions(pacPosition, pacDirection, ghoPosition, ghoDirection, gc) {
+    var newGhoPosition;
+    switch (pacDirection) {
+        case "left": // check if ghost is to the left of pacman -> move ghost to the right
+            newGhoPosition = new Position(ghoPosition.x + 1, ghoPosition.y);
+            break;
+        case "right": // check if ghost is to the right of pacman -> move ghost to the left
+            newGhoPosition = new Position(ghoPosition.x - 1, ghoPosition.y);
+            break;
+        case "up": // check if ghost is above pacman -> move ghost down
+            newGhoPosition = new Position(ghoPosition.x, ghoPosition.y + 1);
+            break;
+        case "down": // check if ghost is below pacman -> most ghost up
+            newGhoPosition = new Position(ghoPosition.x, ghoPosition.y - 1);
+            break;
+        default:
+            return false;
+    }
+    return pacDirection === reverseDirection(ghoDirection) && posnEqual(pacPosition, newGhoPosition);
+    /*
     var newPacPosition = new Posn(pacPosition.x, pacPosition.y);
     newPacPosition.update(pacDirection, gc.width, gc.height);
     var newGhoPosition = new Posn(ghoPosition.x, ghoPosition.y);
     newGhoPosition.update(ghoDirection, gc.width, gc.height);
     return posnEqual(newPacPosition, ghoPosition) && posnEqual(pacPosition, newGhoPosition);
+    */
 }
 
 function drawBoard(listofCells, width, height) {
@@ -178,7 +198,8 @@ function initializeDots() {
     new Posn(9, 28), new Posn(10, 0), new Posn(10, 4), new Posn(10, 7), new Posn(10, 19), new Posn(10, 22),
     new Posn(10, 25), new Posn(10, 28), new Posn(11, 0), new Posn(11, 1), new Posn(11, 2), new Posn(11, 3),
     new Posn(11, 4), new Posn(11, 7), new Posn(11, 19), new Posn(11, 20), new Posn(11, 21), new Posn(11, 22),
-    new Posn(11, 25), new Posn(11, 26), new Posn(11, 27), new Posn(11, 28), new Posn(12, 4), new Posn(12, 22),
+    new Posn(11, 25), new Posn(11, 26), new Posn(11, 27), new Posn(11, 28), new Posn(12, 4),
+    //new Posn(12, 22),
     new Posn(12, 28), new Posn(13, 4), new Posn(13, 22), new Posn(13, 28), new Posn(14, 0), new Posn(14, 1),
     new Posn(14, 1), new Posn(14, 2), new Posn(14, 3), new Posn(14, 4), new Posn(14, 7), new Posn(14, 19),
     new Posn(14, 20), new Posn(14, 21), new Posn(14, 22), new Posn(14, 25), new Posn(14, 26), new Posn(14, 27),

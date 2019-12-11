@@ -3,7 +3,7 @@ var game, CELLSIZE, GHOSTSCATTERTIME, GHOSTCHASETIME, gameState;
 function setup() {
   createCanvas(520, 600);
   rectMode(CENTER);
-  frameRate(5);
+  frameRate(1);
   textFont('Georgia');
   textAlign(CENTER);
   CELLSIZE = 20;
