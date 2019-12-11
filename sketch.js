@@ -1,11 +1,11 @@
 var game, CELLSIZE, GHOSTSCATTERTIME, GHOSTCHASETIME, gameState;
 
 function setup() {
-  createCanvas(520, 580);
+  createCanvas(520, 600);
   rectMode(CENTER);
   frameRate(5);
   textFont('Georgia');
-  textSize(25);
+  textAlign(CENTER);
   CELLSIZE = 20;
   GHOSTSCATTERTIME = 5;
   GHOSTCHASETIME = 20;
@@ -14,21 +14,33 @@ function setup() {
 }
 
 function draw() {
+  noStroke();
   // UPDATE GAME
   //console.log(gameState);
   gameState = gameOver(game);
   if (gameState === 0) {
     game.update();
+  
   }
+
+
+  // DRAW LIVES
+  fill(0);
+  rect(width / 2, height - 20, width, 40);
   // DRAW GAME
+
+
   game.draw();
+  textSize(25);
   if (gameState === 1) {
     fill(255, 255, 0);
-    text("You Win!", width / 2 - 50, height / 2 - 62.5);
+    text("You Win!", width / 2, height / 2 - 72.5);
   } else if (gameState === -1) {
     fill(255, 255, 0);
-    text("Game Over", width / 2 - 61, height / 2 - 62.5);
+    text("Game Over", width / 2, height / 2 - 72.5);
   }
+
+  
 }
 
 function keyPressed() {

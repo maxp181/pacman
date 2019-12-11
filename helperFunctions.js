@@ -10,7 +10,8 @@ function checkCollisions(pacman, listOfGhosts, gc) {
     for (var i = 0; i < listOfGhosts.length; i++) {
         //if collision
         if (posnEqual(pacman.position, listOfGhosts[i].position)
-            || posnEqual(lastPos, listOfGhosts[i].position)
+            //|| swappingPositions(pacman.position, pacman.direction, listOfGhosts[i].position, listOfGhosts[i].direction, gc)
+            //|| posnEqual(lastPos, listOfGhosts[i].position)
             ) {
             //console.log("collision");
             // pacman eats ghost -> teleport back to start
@@ -29,7 +30,7 @@ function checkCollisions(pacman, listOfGhosts, gc) {
                         listOfGhosts[i].position = new Posn(13, 13);
                         break;
                 }
-
+                game.score += 20;
                 listOfGhosts[i].frightened = 0;
                 listOfGhosts[i].direction = "left";
                 listOfGhosts[i].scatter = true;
@@ -55,18 +56,28 @@ function checkCollisions(pacman, listOfGhosts, gc) {
     for (var i = 0; i < gc.dots.length; i++) {
         if (posnEqual(pacman.position, gc.dots[i])) {
             gc.dots.splice(i, 1);
+            game.score += 1;
         }
     }
     //power collisions
     for (var i = 0; i < gc.powers.length; i++) {
         if (posnEqual(pacman.position, gc.powers[i])) {
             gc.powers.splice(i, 1);
+            game.score += 5;
             //scare ghosts
             for (var i = 0; i < listOfGhosts.length; i++) {
                 listOfGhosts[i].frightened = 10;
             }
         }
     }
+}
+
+function swappingPositions(pacPosition, pacDirection, ghoPosition, ghoDirection, gc) {
+    var newPacPosition = new Posn(pacPosition.x, pacPosition.y);
+    newPacPosition.update(pacDirection, gc.width, gc.height);
+    var newGhoPosition = new Posn(ghoPosition.x, ghoPosition.y);
+    newGhoPosition.update(ghoDirection, gc.width, gc.height);
+    return posnEqual(newPacPosition, ghoPosition) && posnEqual(pacPosition, newGhoPosition);
 }
 
 function drawBoard(listofCells, width, height) {

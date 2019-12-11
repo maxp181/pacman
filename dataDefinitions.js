@@ -42,6 +42,7 @@ class Posn {
         this.y = y;
 
         this.draw = function (type) {
+            noStroke();
             var cent = gridToCenterPx(new Posn(this.x, this.y));
             fill(255, 245, 207);
             if (type === "dot") {
@@ -388,25 +389,55 @@ class PacmanGame {
         this.pacman = pacman;
         this.ghosts = ghosts;
         this.gc = gc;
+        this.score = 0;
 
         this.draw = function () {
+            // DRAW BOARD
             drawBoard(this.gc.board, this.gc.width, this.gc.height);
+            // DRAW STARTER TEXT
             if (this.pacman.direction === "" && this.pacman.lives > 0) {
+                textSize(25);
                 fill(255, 255, 0);
-                text("Ready!", width / 2 - 35, height / 2 - 62.5);
+                text("Ready!", width / 2, height / 2 - 72.5);
             }
+            // DRAW DOTS, PACMAN, AND GHOSTS
             this.gc.drawDots("dot");
             this.gc.drawDots("power");
             this.pacman.draw();
             drawGhosts(this.ghosts);
+
+            // DRAW LIVES
+            push();
+            var lives = this.pacman.lives;
+            var standardPac = new Pacman(true, "left", new Posn(1, 29), 3);
+            while (lives > 0) {
+                standardPac.draw();
+                translate(25, 0);
+                lives --;
+            }
+            pop();
+            // DRAW SCORE
+            textSize(18);
+            stroke(255);
+            text("Score: " + this.score, width / 2, height - 4);
         };
 
         this.update = function () {
-            this.pacman.update(this.gc);
+            // CHECK COLLISIONS BEFORE MOVING
+            checkCollisions(this.pacman, this.ghosts, this.gc);
+
+            var currentGhosts = this.ghosts;
+            var currentPos = pacman.position;
+
+            // UPDATE
             if (this.pacman.direction != "") {
                 updateGhosts(this.ghosts, this.pacman, this.gc);
-                checkCollisions(this.pacman, this.ghosts, this.gc);
+                //checkCollisions(this.pacman, this.ghosts, this.gc);
             }
+            this.pacman.update(this.gc);
+
+            // CHECK IF PACMAN AND GHOST PASSED EACH OTHER
+            
             //checkCollisions(this.pacman, this.ghosts, this.gc.dots, this.gc.powers, this.gc.ghostStarts, this.gc.start);
             
         };
