@@ -37,17 +37,7 @@ function checkCollisions(pacman, listOfGhosts, gc) {
                 listOfGhosts[i].timer = 0;
             } else { // ghost eats pacman
                 pacman.lives = max(pacman.lives - 1, 0);
-                if (pacman.lives > 0) {
-                    //reset pacman
-                    pacman.mouth = true;
-                    pacman.direction = "";
-                    pacman.position = new Posn(12, 22);
-                    //reset ghosts
-                    listOfGhosts[0] = new Ghost("blinky", "", new Posn(12, 13), 0, true, 0);
-                    listOfGhosts[1] = new Ghost("clyde", "", new Posn(13, 14), 0, true, 0);
-                    listOfGhosts[2] = new Ghost("inky", "", new Posn(12, 14), 0, true, 0);
-                    listOfGhosts[3] = new Ghost("pinky", "", new Posn(13, 13), 0, true, 0);
-                }
+                pacman.dying = 15;
             }
         }
     }
@@ -72,20 +62,29 @@ function checkCollisions(pacman, listOfGhosts, gc) {
     }
 }
 
-function swappingPositions(pacPosition, pacDirection, ghoPosition, ghoDirection, gc) {
+function swappingWithAny(pacman, listOfGhosts) {
+    for (var i = 0; i < listOfGhosts.length; i++) {
+        if (swappingPositions(pacman.position, pacman.direction, listOfGhosts[i].position, listOfGhosts[i].direction)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function swappingPositions(pacPosition, pacDirection, ghoPosition, ghoDirection) {
     var newGhoPosition;
     switch (pacDirection) {
         case "left": // check if ghost is to the left of pacman -> move ghost to the right
-            newGhoPosition = new Position(ghoPosition.x + 1, ghoPosition.y);
+            newGhoPosition = new Posn(ghoPosition.x + 1, ghoPosition.y);
             break;
         case "right": // check if ghost is to the right of pacman -> move ghost to the left
-            newGhoPosition = new Position(ghoPosition.x - 1, ghoPosition.y);
+            newGhoPosition = new Posn(ghoPosition.x - 1, ghoPosition.y);
             break;
         case "up": // check if ghost is above pacman -> move ghost down
-            newGhoPosition = new Position(ghoPosition.x, ghoPosition.y + 1);
+            newGhoPosition = new Posn(ghoPosition.x, ghoPosition.y + 1);
             break;
         case "down": // check if ghost is below pacman -> most ghost up
-            newGhoPosition = new Position(ghoPosition.x, ghoPosition.y - 1);
+            newGhoPosition = new Posn(ghoPosition.x, ghoPosition.y - 1);
             break;
         default:
             return false;

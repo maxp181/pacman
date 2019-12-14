@@ -3,7 +3,7 @@ var game, CELLSIZE, GHOSTSCATTERTIME, GHOSTCHASETIME, gameState;
 function setup() {
   createCanvas(520, 600);
   rectMode(CENTER);
-  frameRate(1);
+  frameRate(7);
   textFont('Georgia');
   textAlign(CENTER);
   CELLSIZE = 20;
@@ -14,6 +14,9 @@ function setup() {
 }
 
 function draw() {
+
+  console.log(game.pacman.dying);
+
   noStroke();
   // UPDATE GAME
   //console.log(gameState);
@@ -44,7 +47,7 @@ function draw() {
 }
 
 function keyPressed() {
-  var direction = "";
+  var direction = game.pacman.direction;;
   switch (keyCode) {
     case LEFT_ARROW:
       direction = "left";

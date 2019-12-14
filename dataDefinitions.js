@@ -141,43 +141,74 @@ class Cell {
  - "down"
  - "left"
  - "right" */
-/* (define-struct pacman [mouth direction position lives])
+/* (define-struct pacman [mouth direction position lives dying])
 
 A Pacman is a new Pacman(Boolean, Dir, Posn, Natural)
 Interpretation: The state of Pacman, where:
  - mouth represents the state of the mouth, whether it is open (#true) or closed (#false)
  - direction represents the direction of pacman (up/down/left/right)
- - position is the position of pacman on the board, and
- - lives is the number of lives that pacman has left. */
+ - position is the position of pacman on the board,
+ - lives is the number of lives that pacman has left, and
+ - dying represents whether pacman is in the processing of dying (> 0) or not (0). */
 class Pacman {
     constructor(mouth, direction, position, lives) {
         this.mouth = mouth;
         this.direction = direction;
         this.position = position;
         this.lives = lives;
+        this.dying = 0;
 
         this.draw = function () {
-            fill(255, 255, 0);
             var cent = gridToCenterPx(this.position);
+            var startAngle = 0;
+            var endAngle = 0;
+            fill(255, 255, 0);
             circle(cent.x, cent.y, 16);
-            //mouth
-            if (this.mouth) {
-                fill(0);
-                switch (this.direction) {
-                    case "left":
-                        arc(cent.x, cent.y, 16, 16, (5.0 / 6.0) * PI, (7.0 / 6.0) * PI);
-                        break;
-                    case "down":
-                        arc(cent.x, cent.y, 16, 16, PI / 3.0, (2.0 / 3.0) * PI);
-                        break;
-                    case "right":
-                        arc(cent.x, cent.y, 16, 16, (11.0 / 6.0) * PI, PI / 6.0);
-                        break;
-                    case "up":
-                        arc(cent.x, cent.y, 16, 16, (4.0 / 3.0) * PI, (5.0 / 3.0) * PI);
-                        break;
+
+            //regular pacman
+            fill(0);
+            if (this.dying === 0) {
+                //mouth
+                if (this.mouth) {
+                    switch (this.direction) {
+                        case "left":
+                            //arc(cent.x, cent.y, 16, 16, (5.0 / 6.0) * PI, (7.0 / 6.0) * PI);
+                            startAngle = (5.0 / 6.0) * PI;
+                            endAngle = (7.0 / 6.0) * PI;
+                            break;
+                        case "down":
+                            //arc(cent.x, cent.y, 16, 16, PI / 3.0, (2.0 / 3.0) * PI);
+                            startAngle = PI / 3.0;
+                            endAngle = (2.0 / 3.0) * PI;
+                            break;
+                        case "right":
+                            //arc(cent.x, cent.y, 16, 16, (11.0 / 6.0) * PI, PI / 6.0);
+                            startAngle = (11.0 / 6.0) * PI;
+                            endAngle = PI / 6.0;
+                            break;
+                        case "up":
+                            //arc(cent.x, cent.y, 16, 16, (4.0 / 3.0) * PI, (5.0 / 3.0) * PI);
+                            startAngle = (4.0 / 3.0) * PI;
+                            endAngle = (5.0 / 3.0) * PI;
+                            break;
+                        default:
+                            startAngle = (5.0 / 6.0) * PI;
+                            endAngle = (7.0 / 6.0) * PI;
+                            break;
+                    } 
+                } else {
+                    fill(255, 255, 0);
+                }
+            } else { // dying pacman
+                if (this.dying > 10) {
+                    startAngle = (4.0 / 3.0) * PI;
+                    endAngle = (5.0 / 3.0) * PI;
+                } else {
+                    startAngle = map(this.dying, 10, 0, (4.0 / 3.0) * PI, (1.0 / 2.0) * PI);
+                    endAngle = map(this.dying, 10, 0, (5.0 / 3.0) * PI, (5.0 / 2.0) * PI);
                 }
             }
+            arc(cent.x, cent.y, 16.5, 16.5, startAngle, endAngle);
         };
 
         this.canMove = function (gc) {
@@ -216,6 +247,7 @@ class Ghost {
 
         this.draw = function () {
             //COLOR
+            noStroke();
             if (this.frightened > 0) {
                 fill(0, 0, 255);
             }
@@ -244,33 +276,55 @@ class Ghost {
             triangle(cent.x - CELLSIZE * 0.37, cent.y + CELLSIZE * 0.4, cent.x - CELLSIZE * 0.13, cent.y + CELLSIZE * 0.4, cent.x - CELLSIZE * 0.25, cent.y + CELLSIZE * 0.2);
             triangle(cent.x + CELLSIZE * 0.13, cent.y + CELLSIZE * 0.4, cent.x + CELLSIZE * 0.37, cent.y + CELLSIZE * 0.4, cent.x + CELLSIZE * 0.25, cent.y + CELLSIZE * 0.2);
             //EYES
-            fill(255);
+            if (this.frightened > 0) {
+                fill(250, 186, 176);
+            } else {
+                fill(255);
+            }
             ellipse(cent.x - CELLSIZE * 0.15, cent.y - CELLSIZE * 0.075, CELLSIZE * .175, CELLSIZE * .233);
             ellipse(cent.x + CELLSIZE * 0.15, cent.y - CELLSIZE * 0.075, CELLSIZE * .175, CELLSIZE * .233);
             //PUPILS
-            push();
-            switch (this.direction) {
-                case "left":
-                    translate(-CELLSIZE * 0.188, -CELLSIZE * 0.075);
-                    break;
-                case "right":
-                    translate(-CELLSIZE * 0.111, -CELLSIZE * 0.075);
-                    break;
-                case "up":
-                    translate(-CELLSIZE * 0.15, -CELLSIZE * 0.139);
-                    break;
-                case "down":
-                    translate(-CELLSIZE * 0.15, -CELLSIZE * 0.012);
-                    break;
-                case "":
-                    //translate(-CELLSIZE * 0.15, -CELLSIZE * 0.075);
-                    translate(-CELLSIZE * 0.15, -CELLSIZE * 0.139);
-                    break;
+            if (this.frightened === 0) {
+                push();
+                switch (this.direction) {
+                    case "left":
+                        translate(-CELLSIZE * 0.188, -CELLSIZE * 0.075);
+                        break;
+                    case "right":
+                        translate(-CELLSIZE * 0.111, -CELLSIZE * 0.075);
+                        break;
+                    case "up":
+                        translate(-CELLSIZE * 0.15, -CELLSIZE * 0.139);
+                        break;
+                    case "down":
+                        translate(-CELLSIZE * 0.15, -CELLSIZE * 0.012);
+                        break;
+                    case "":
+                        //translate(-CELLSIZE * 0.15, -CELLSIZE * 0.075);
+                        translate(-CELLSIZE * 0.15, -CELLSIZE * 0.139);
+                        break;
+                }
+                fill(0, 0, 255);
+                circle(cent.x, cent.y, CELLSIZE * 0.1);
+                circle(cent.x + CELLSIZE * 0.3, cent.y, CELLSIZE * 0.1);
+                pop();
             }
-            fill(0, 0, 255);
-            circle(cent.x, cent.y, CELLSIZE * 0.1);
-            circle(cent.x + CELLSIZE * 0.3, cent.y, CELLSIZE * 0.1);
-            pop();
+            //MOUTH (if frightened) 
+            if (this.frightened > 0) {
+                stroke(250, 186, 176);
+                noFill();
+                beginShape();
+                curveVertex(cent.x - CELLSIZE * 0.3, cent.y + CELLSIZE * 0.15);
+                curveVertex(cent.x - CELLSIZE * 0.3, cent.y + CELLSIZE * 0.15);
+                curveVertex(cent.x - CELLSIZE * 0.2, cent.y + CELLSIZE * 0.1);
+                curveVertex(cent.x - CELLSIZE * 0.1, cent.y + CELLSIZE * 0.15);
+                curveVertex(cent.x, cent.y + CELLSIZE * 0.1);
+                curveVertex(cent.x + CELLSIZE * 0.1, cent.y + CELLSIZE * 0.15);
+                curveVertex(cent.x + CELLSIZE * 0.2, cent.y + CELLSIZE * 0.1);
+                curveVertex(cent.x + CELLSIZE * 0.3, cent.y + CELLSIZE * 0.15);
+                curveVertex(cent.x + CELLSIZE * 0.3, cent.y + CELLSIZE * 0.15);
+                endShape();
+            }
         };
 
         this.update = function (pacman, gc) {
@@ -403,8 +457,8 @@ class PacmanGame {
             // DRAW DOTS, PACMAN, AND GHOSTS
             this.gc.drawDots("dot");
             this.gc.drawDots("power");
-            this.pacman.draw();
             drawGhosts(this.ghosts);
+            this.pacman.draw();
 
             // DRAW LIVES
             push();
@@ -413,16 +467,51 @@ class PacmanGame {
             while (lives > 0) {
                 standardPac.draw();
                 translate(25, 0);
-                lives --;
+                lives--;
             }
             pop();
             // DRAW SCORE
             textSize(18);
-            stroke(255);
+            fill(255, 255, 0);
             text("Score: " + this.score, width / 2, height - 4);
         };
 
         this.update = function () {
+
+
+            // if pac dying --> keep on dying
+            // otherwise, go do that voodoo that you do so well
+
+
+
+            // if going to pass a ghost --> update pacman and check collisions
+            // otherwise --> update both and check collisions
+            if (this.pacman.dying > 0) {
+                console.log("dying :)");
+                this.pacman.dying--;
+                if (this.pacman.lives > 0 && this.pacman.dying === 0) {
+                    //reset pacman
+                    this.pacman.mouth = true;
+                    this.pacman.direction = "";
+                    this.pacman.position = new Posn(12, 22);
+                    //reset ghosts
+                    this.ghosts[0] = new Ghost("blinky", "", new Posn(12, 13), 0, true, 0);
+                    this.ghosts[1] = new Ghost("clyde", "", new Posn(13, 14), 0, true, 0);
+                    this.ghosts[2] = new Ghost("inky", "", new Posn(12, 14), 0, true, 0);
+                    this.ghosts[3] = new Ghost("pinky", "", new Posn(13, 13), 0, true, 0);
+                }
+            } else if (swappingWithAny(this.pacman, this.ghosts)) {
+                this.pacman.update(this.gc);
+                checkCollisions(this.pacman, this.ghosts, this.gc);
+                updateGhosts(this.ghosts, this.pacman, this.gc);
+            } else if (this.pacman.direction != "" && this.pacman.lives > 0) {
+                this.pacman.update(this.gc);
+                updateGhosts(this.ghosts, this.pacman, this.gc);
+                checkCollisions(this.pacman, this.ghosts, this.gc);
+            }
+
+
+            /*
             // CHECK COLLISIONS BEFORE MOVING
             checkCollisions(this.pacman, this.ghosts, this.gc);
             
@@ -447,7 +536,7 @@ class PacmanGame {
            
             
             //checkCollisions(this.pacman, this.ghosts, this.gc.dots, this.gc.powers, this.gc.ghostStarts, this.gc.start);
-            
+           */
         };
     }
 }
