@@ -163,6 +163,7 @@ class Pacman {
             var startAngle = 0;
             var endAngle = 0;
             fill(255, 255, 0);
+            noStroke();
             circle(cent.x, cent.y, 16);
 
             //regular pacman
@@ -195,7 +196,7 @@ class Pacman {
                             startAngle = (5.0 / 6.0) * PI;
                             endAngle = (7.0 / 6.0) * PI;
                             break;
-                    } 
+                    }
                 } else {
                     fill(255, 255, 0);
                 }
@@ -230,12 +231,13 @@ class Pacman {
 
 A Ghost is a new Ghost(String, Dir, Posn, Nat, Boolean, Nat)
 Interpretation: The state of a ghost, where:
- - type represents the type of the ghost ("blinky", "pinky", "inky", or "clyde")
- - direction represents the direction of the ghost (up/down/left/right)
- - position is the position of the ghost on the board
- - frightened represents whether a ghost is frightened (n > 0) or not (n = 0)
- - scatter represents the mode of a ghost, #true for scatter and #false for chase, and
- - timer represents the timer of how long the ghost has been in that mode. */
+ - type represents the type of the ghost ("blinky", "pinky", "inky", or "clyde"),
+ - direction represents the direction of the ghost (up/down/left/right),
+ - position is the position of the ghost on the board,
+ - frightened represents whether a ghost is frightened (n > 0) or not (n = 0),
+ - scatter represents the mode of a ghost, #true for scatter and #false for chase,
+ - timer represents the timer of how long the ghost has been in that mode, and
+ - eaten represents whether the ghost has been eaten (true) or not (false). */
 class Ghost {
     constructor(type, direction, position, frightened, scatter, timer) {
         this.type = type;
@@ -244,6 +246,7 @@ class Ghost {
         this.frightened = frightened;
         this.scatter = scatter;
         this.timer = timer;
+        this.eaten = false;
 
         this.draw = function () {
             //COLOR
@@ -267,16 +270,20 @@ class Ghost {
                         break;
                 }
             }
-            //BODY
             var cent = gridToCenterPx(this.position);
-            rect(cent.x, cent.y, CELLSIZE * 0.75, CELLSIZE * 0.8, CELLSIZE / 2.0, CELLSIZE / 2.0, 0, 0);
-            //SPIKES
-            fill(0);
-            triangle(cent.x - CELLSIZE * 0.13, cent.y + CELLSIZE * 0.4, cent.x + CELLSIZE * 0.13, cent.y + CELLSIZE * 0.4, cent.x, cent.y + CELLSIZE * 0.2);
-            triangle(cent.x - CELLSIZE * 0.37, cent.y + CELLSIZE * 0.4, cent.x - CELLSIZE * 0.13, cent.y + CELLSIZE * 0.4, cent.x - CELLSIZE * 0.25, cent.y + CELLSIZE * 0.2);
-            triangle(cent.x + CELLSIZE * 0.13, cent.y + CELLSIZE * 0.4, cent.x + CELLSIZE * 0.37, cent.y + CELLSIZE * 0.4, cent.x + CELLSIZE * 0.25, cent.y + CELLSIZE * 0.2);
+            // draw the body if not being eaten
+            if (!this.eaten) {
+                //BODY
+                rect(cent.x, cent.y, CELLSIZE * 0.75, CELLSIZE * 0.8, CELLSIZE / 2.0, CELLSIZE / 2.0, 0, 0);
+                //SPIKES
+                fill(0);
+                triangle(cent.x - CELLSIZE * 0.13, cent.y + CELLSIZE * 0.4, cent.x + CELLSIZE * 0.13, cent.y + CELLSIZE * 0.4, cent.x, cent.y + CELLSIZE * 0.2);
+                triangle(cent.x - CELLSIZE * 0.37, cent.y + CELLSIZE * 0.4, cent.x - CELLSIZE * 0.13, cent.y + CELLSIZE * 0.4, cent.x - CELLSIZE * 0.25, cent.y + CELLSIZE * 0.2);
+                triangle(cent.x + CELLSIZE * 0.13, cent.y + CELLSIZE * 0.4, cent.x + CELLSIZE * 0.37, cent.y + CELLSIZE * 0.4, cent.x + CELLSIZE * 0.25, cent.y + CELLSIZE * 0.2);
+            }
+
             //EYES
-            if (this.frightened > 0) {
+            if (this.frightened > 0 && !this.eaten) {
                 fill(250, 186, 176);
             } else {
                 fill(255);
@@ -284,7 +291,7 @@ class Ghost {
             ellipse(cent.x - CELLSIZE * 0.15, cent.y - CELLSIZE * 0.075, CELLSIZE * .175, CELLSIZE * .233);
             ellipse(cent.x + CELLSIZE * 0.15, cent.y - CELLSIZE * 0.075, CELLSIZE * .175, CELLSIZE * .233);
             //PUPILS
-            if (this.frightened === 0) {
+            if (this.frightened === 0 && !this.eaten) {
                 push();
                 switch (this.direction) {
                     case "left":
@@ -310,7 +317,7 @@ class Ghost {
                 pop();
             }
             //MOUTH (if frightened) 
-            if (this.frightened > 0) {
+            if (this.frightened > 0 && !this.eaten) {
                 stroke(250, 186, 176);
                 noFill();
                 beginShape();
@@ -339,11 +346,32 @@ class Ghost {
                     && (!(currentCell.walls.includes(direction)))) {
                     possibleDirections.push(allDirections[i]);
                 }
+                // special condition for going back into grid
+                if (this.eaten && (this.position.x === 12 || this.position.x === 13)
+                    && this.position.y === 11) {
+                        possibleDirections = ["down"];
+                }
             }
-
+            // if being eaten -> return to start
+            if (this.eaten) {
+                switch (this.type) {
+                    case "blinky":
+                        goal = new Posn(12, 13);
+                        break;
+                    case "clyde":
+                        goal = new Posn(13, 14);
+                        break;
+                    case "inky":
+                        goal = new Posn(12, 14);
+                        break;
+                    case "pinky":
+                        goal = new Posn(13, 13);
+                        break;
+                }
+            }
             //if in box
-            if (this.position.x >= 9 && this.position.x <= 16 &&
-                this.position.y >= 12 && this.position.x <= 15) {
+            else if (this.position.x >= 9 && this.position.x <= 16 &&
+                this.position.y >= 12 && this.position.y <= 15) {
                 goal = new Posn(12, 11);
             } else if (this.scatter) { //scatter mode
                 switch (this.type) {
@@ -403,6 +431,15 @@ class Ghost {
             } else {
                 this.frightened = max(0, this.frightened - 0.5);
                 this.timer += 1;
+            }
+            // if back to start -> reset ghost
+            if (this.position.x >= 9 && this.position.x <= 16 &&
+                this.position.y >= 12 && this.position.y <= 15) {
+                this.eaten = false;
+                this.frightened = 0;
+                this.direction = "left";
+                this.scatter = true;
+                this.timer = 0;
             }
         };
 

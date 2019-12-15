@@ -9,32 +9,12 @@ function checkCollisions(pacman, listOfGhosts, gc) {
 
     for (var i = 0; i < listOfGhosts.length; i++) {
         //if collision
-        if (posnEqual(pacman.position, listOfGhosts[i].position)
-            //|| swappingPositions(pacman.position, pacman.direction, listOfGhosts[i].position, listOfGhosts[i].direction, gc)
-            //|| posnEqual(lastPos, listOfGhosts[i].position)
-        ) {
+        if (posnEqual(pacman.position, listOfGhosts[i].position) && !listOfGhosts[i].eaten) {
             //console.log("collision");
             // pacman eats ghost -> teleport back to start
             if (listOfGhosts[i].frightened > 0) {
-                switch (listOfGhosts[i].type) {
-                    case "blinky":
-                        listOfGhosts[i].position = new Posn(12, 13);
-                        break;
-                    case "clyde":
-                        listOfGhosts[i].position = new Posn(13, 14);
-                        break;
-                    case "inky":
-                        listOfGhosts[i].position = new Posn(12, 14);
-                        break;
-                    case "pinky":
-                        listOfGhosts[i].position = new Posn(13, 13);
-                        break;
-                }
+                listOfGhosts[i].eaten = true;
                 game.score += 20;
-                listOfGhosts[i].frightened = 0;
-                listOfGhosts[i].direction = "left";
-                listOfGhosts[i].scatter = true;
-                listOfGhosts[i].timer = 0;
             } else { // ghost eats pacman
                 pacman.lives = max(pacman.lives - 1, 0);
                 pacman.dying = 15;
@@ -56,7 +36,9 @@ function checkCollisions(pacman, listOfGhosts, gc) {
             game.score += 5;
             //scare ghosts
             for (var i = 0; i < listOfGhosts.length; i++) {
-                listOfGhosts[i].frightened = 10;
+                if (!listOfGhosts[i].eaten) {
+                    listOfGhosts[i].frightened = 10;
+                }
             }
         }
     }

@@ -9,43 +9,41 @@ function setup() {
   CELLSIZE = 20;
   GHOSTSCATTERTIME = 5;
   GHOSTCHASETIME = 20;
-  game = createGame();
   gameState = 0;
+  game = createGame();  
 }
 
 function draw() {
-
-  console.log(game.pacman.dying);
-
   noStroke();
-  // UPDATE GAME
-  //console.log(gameState);
+
   gameState = gameOver(game);
+  // IF GAME IS NOT OVER, UPDATE GAME
   if (gameState === 0) {
     game.update();
-  
   }
 
-
-  // DRAW LIVES
+  // BANNER AT BOTTOM
   fill(0);
   rect(width / 2, height - 20, width, 40);
+  
   // DRAW GAME
-
-
   game.draw();
-  textSize(25);
+
+  // WIN/LOSE TEXT
   if (gameState === 1) {
+    textSize(25);
     fill(255, 255, 0);
     text("You Win!", width / 2, height / 2 - 72.5);
   } else if (gameState === -1) {
+    textSize(25);
     fill(255, 255, 0);
     text("Game Over", width / 2, height / 2 - 72.5);
   }
-
   
 }
 
+// keyPressed : String --> Void
+// changes pacman's direction if it is a possible direction
 function keyPressed() {
   var direction = game.pacman.direction;;
   switch (keyCode) {
@@ -63,8 +61,10 @@ function keyPressed() {
         break; 
   }
   var pacman = game.pacman;
-  //new pacman with new direction
+  // new pacman with new direction
   var newPacman = new Pacman(pacman.mouth, direction, pacman.position, pacman.lives);
+  
+  // checks if the new direction is a valid direction
   if (newPacman.canMove(game.gc)) {
     game.pacman.direction = direction;
   }
