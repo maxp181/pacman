@@ -1,40 +1,33 @@
+// checkCollisions : Pacman [List-of Ghost] Configuration -> void
+// checks if pacman collided with any ghosts, dots, or power pellets
 function checkCollisions(pacman, listOfGhosts, gc) {
-    //ghost collisions
-    var lastPos;
-    var currentPos;
-    //var listOfGhostPos = [];
-    lastPos = new Posn(pacman.position.x, pacman.position.y);
-    lastPos.update(reverseDirection(pacman.direction), gc.width, gc.height);
-    currentPos = new Posn(pacman.position.x, pacman.position.y);
-
+    // ghost collisions
     for (var i = 0; i < listOfGhosts.length; i++) {
-        //if collision
+        // if collision (same position and ghost is not resetting)
         if (posnEqual(pacman.position, listOfGhosts[i].position) && !listOfGhosts[i].eaten) {
             //console.log("collision");
-            // pacman eats ghost -> teleport back to start
+            // pacman eats ghost -> send ghost back to start
             if (listOfGhosts[i].frightened > 0) {
                 listOfGhosts[i].eaten = true;
                 game.score += 20;
             } else { // ghost eats pacman
-                pacman.lives = max(pacman.lives - 1, 0);
                 pacman.dying = 15;
             }
         }
     }
-
-    //dot collisions
+    // dot collisions
     for (var i = 0; i < gc.dots.length; i++) {
         if (posnEqual(pacman.position, gc.dots[i])) {
             gc.dots.splice(i, 1);
             game.score += 1;
         }
     }
-    //power collisions
+    // power pellet collisions
     for (var i = 0; i < gc.powers.length; i++) {
         if (posnEqual(pacman.position, gc.powers[i])) {
             gc.powers.splice(i, 1);
             game.score += 5;
-            //scare ghosts
+            // scare ghosts
             for (var i = 0; i < listOfGhosts.length; i++) {
                 if (!listOfGhosts[i].eaten) {
                     listOfGhosts[i].frightened = 10;
@@ -44,6 +37,8 @@ function checkCollisions(pacman, listOfGhosts, gc) {
     }
 }
 
+// swappingWithAny : Pacman [List-of Ghost] -> Boolean
+// is pacman swapping positions with any ghost?
 function swappingWithAny(pacman, listOfGhosts) {
     for (var i = 0; i < listOfGhosts.length; i++) {
         if (swappingPositions(pacman.position, pacman.direction, listOfGhosts[i].position, listOfGhosts[i].direction)) {
@@ -53,6 +48,8 @@ function swappingWithAny(pacman, listOfGhosts) {
     return false;
 }
 
+// swappingPositions : Posn Dir Posn Dir -> Boolean
+// are the pacman and ghost swapping positions (facing each other)?
 function swappingPositions(pacPosition, pacDirection, ghoPosition, ghoDirection) {
     var newGhoPosition;
     switch (pacDirection) {
@@ -72,15 +69,10 @@ function swappingPositions(pacPosition, pacDirection, ghoPosition, ghoDirection)
             return false;
     }
     return pacDirection === reverseDirection(ghoDirection) && posnEqual(pacPosition, newGhoPosition);
-    /*
-    var newPacPosition = new Posn(pacPosition.x, pacPosition.y);
-    newPacPosition.update(pacDirection, gc.width, gc.height);
-    var newGhoPosition = new Posn(ghoPosition.x, ghoPosition.y);
-    newGhoPosition.update(ghoDirection, gc.width, gc.height);
-    return posnEqual(newPacPosition, ghoPosition) && posnEqual(pacPosition, newGhoPosition);
-    */
 }
 
+// drawBoard : [List-of Cell] Number Number -> void
+// draws the baord
 function drawBoard(listofCells, width, height) {
     //BACKGROUND
     fill(0);
@@ -92,19 +84,23 @@ function drawBoard(listofCells, width, height) {
 
 }
 
+// drawGhosts : [List-of Ghost] -> void
+// draws the ghosts
 function drawGhosts(listOfGhosts) {
     for (var i = 0; i < listOfGhosts.length; i++) {
         listOfGhosts[i].draw();
     }
 }
 
-
+// updateGhosts : [List-of Ghost] Pacman Configuration -> void
+// updates the ghosts' position
 function updateGhosts(listOfGhosts, pacman, gc) {
     for (var i = 0; i < listOfGhosts.length; i++) {
         listOfGhosts[i].update(pacman, gc);
     }
 }
 
+// getCell : Posn [List-of Cell] -> Cell
 // finds the cell with the given position
 function getCell(posn, board) {
     var cell = new Cell(new Posn(-1, -1), []);
@@ -117,11 +113,14 @@ function getCell(posn, board) {
     return cell;
 }
 
-//are two posns equal?
+// posnEqual : Posn Posn -> Boolean
+// are two posns equal?
 function posnEqual(posn1, posn2) {
     return ((posn1.x === posn2.x) && (posn1.y === posn2.y));
 }
 
+// reverseDirection : Dir -> Dir
+// returns the opposite direction
 function reverseDirection(direction) {
     switch (direction) {
         case "left":
@@ -132,10 +131,21 @@ function reverseDirection(direction) {
             return "down";
         case "down":
             return "up";
+        default:
+            return "";
     }
 }
 
-// createGame : creates the initial game
+// gridToCenterPx : Number -> Number
+// converts the grid position into its bitmap position (center of the grid)
+function gridToCenterPx(grid) {
+    var x = grid.x * CELLSIZE + 10;
+    var y = grid.y * CELLSIZE + 10;
+    return new Posn(x, y);
+}
+
+// createGame : void -> PacmanGame
+// creates the initial game
 function createGame() {
     var gc = createConfiguration();
     return new PacmanGame(new Pacman(true, "", gc.start, 3),
@@ -147,7 +157,8 @@ function createGame() {
         gc);
 }
 
-// createBoard : creates the board
+// createConfiguration: void -> Configuration
+// creates the game configuration
 function createConfiguration() {
     var width = 26; // 26 cells wide
     var height = 29; // 29 cells tall
@@ -159,6 +170,8 @@ function createConfiguration() {
     return new Configuration(width, height, board, start, dots, powers, ghostStarts);
 }
 
+// initializeDots : void -> [List-of Posn]
+// creates all the dots
 function initializeDots() {
     return [new Posn(0, 0), new Posn(0, 1), new Posn(0, 3), new Posn(0, 4), new Posn(0, 5), new Posn(0, 6),
     new Posn(0, 7), new Posn(0, 19), new Posn(0, 20), new Posn(0, 21), new Posn(0, 25), new Posn(0, 26),
@@ -180,7 +193,6 @@ function initializeDots() {
     new Posn(10, 25), new Posn(10, 28), new Posn(11, 0), new Posn(11, 1), new Posn(11, 2), new Posn(11, 3),
     new Posn(11, 4), new Posn(11, 7), new Posn(11, 19), new Posn(11, 20), new Posn(11, 21), new Posn(11, 22),
     new Posn(11, 25), new Posn(11, 26), new Posn(11, 27), new Posn(11, 28), new Posn(12, 4),
-    //new Posn(12, 22),
     new Posn(12, 28), new Posn(13, 4), new Posn(13, 22), new Posn(13, 28), new Posn(14, 0), new Posn(14, 1),
     new Posn(14, 1), new Posn(14, 2), new Posn(14, 3), new Posn(14, 4), new Posn(14, 7), new Posn(14, 19),
     new Posn(14, 20), new Posn(14, 21), new Posn(14, 22), new Posn(14, 25), new Posn(14, 26), new Posn(14, 27),
@@ -205,6 +217,8 @@ function initializeDots() {
     ];
 }
 
+// initializeBoard : void -> [List-of Cell]
+// creates all the cells in the board
 function initializeBoard() {
     return [new Cell(new Posn(0, 0), ["up", "left"]),
     new Cell(new Posn(1, 0), ["up", "down"]),
@@ -961,10 +975,4 @@ function initializeBoard() {
     new Cell(new Posn(24, 28), ["up", "down"]),
     new Cell(new Posn(25, 28), ["right", "down"])
     ];
-}
-
-function gridToCenterPx(grid) {
-    var x = grid.x * CELLSIZE + 10;
-    var y = grid.y * CELLSIZE + 10;
-    return new Posn(x, y);
 }

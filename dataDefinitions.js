@@ -526,6 +526,10 @@ class PacmanGame {
             if (this.pacman.dying > 0) {
                 console.log("dying :)");
                 this.pacman.dying--;
+                // done dying -> lose life
+                if (this.pacman.dying === 0) {
+                    this.pacman.lives = max(this.pacman.lives - 1, 0);
+                }
                 if (this.pacman.lives > 0 && this.pacman.dying === 0) {
                     //reset pacman
                     this.pacman.mouth = true;

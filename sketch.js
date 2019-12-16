@@ -6,11 +6,11 @@ function setup() {
   frameRate(7);
   textFont('Georgia');
   textAlign(CENTER);
+  game = createGame();  
   CELLSIZE = 20;
   GHOSTSCATTERTIME = 5;
   GHOSTCHASETIME = 20;
   gameState = 0;
-  game = createGame();  
 }
 
 function draw() {
