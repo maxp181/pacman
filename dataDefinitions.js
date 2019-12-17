@@ -1,6 +1,4 @@
-/* (define-struct configuration [width height board start dots powers ghost-starts])
-
-A Configuration is a new Configuration(Number, Number, Board, Posn, [List-of Posn], [List-of Posn], [List-of Posn])
+/* A Configuration is a new Configuration(Number, Number, Board, Posn, [List-of Posn], [List-of Posn], [List-of Posn])
 Interpretation: A game configuration, where:
  - width is the width of the board (number of cells),
  - height is the height of the board (number of cells),
@@ -42,13 +40,12 @@ class Posn {
         this.y = y;
 
         this.draw = function (type) {
-            noStroke();
             var cent = gridToCenterPx(new Posn(this.x, this.y));
+            noStroke();
             fill(255, 245, 207);
             if (type === "dot") {
                 circle(cent.x, cent.y, 5);
-            }
-            else if (type === "power") {
+            } else if (type === "power") {
                 circle(cent.x, cent.y, 12);
             }
         };
@@ -77,9 +74,7 @@ class Posn {
 /* A Board is a [List-of Cell]
 Interpretation: A list of cells on the board. */
 
-/* (define-struct pair [position walls])
-
-A Cell is a new Cell(Posn, [List-of Dir])
+/* A Cell is a new Cell(Posn, [List-of Dir])
 Interpretation: Tracks information for a cell, where:
 - position represents the cell's location (cell position), and
 - walls represents all the walls adjacent to the cell. */
@@ -91,7 +86,6 @@ class Cell {
         this.draw = function () {
             var cent = gridToCenterPx(this.position);
             var x1, x2, y1, y2;
-            push();
             for (var i = 0; i < this.walls.length; i++) {
                 strokeWeight(2);
                 stroke(25, 25, 166);
@@ -131,7 +125,6 @@ class Cell {
                 }
                 line(x1, y1, x2, y2);
             }
-            pop();
         };
     }
 }
@@ -141,9 +134,8 @@ class Cell {
  - "down"
  - "left"
  - "right" */
-/* (define-struct pacman [mouth direction position lives dying])
 
-A Pacman is a new Pacman(Boolean, Dir, Posn, Natural)
+/* A Pacman is a new Pacman(Boolean, Dir, Posn, Natural)
 Interpretation: The state of Pacman, where:
  - mouth represents the state of the mouth, whether it is open (#true) or closed (#false)
  - direction represents the direction of pacman (up/down/left/right)
@@ -162,33 +154,28 @@ class Pacman {
             var cent = gridToCenterPx(this.position);
             var startAngle = 0;
             var endAngle = 0;
-            fill(255, 255, 0);
+            // draw body
             noStroke();
+            fill(255, 255, 0);
             circle(cent.x, cent.y, 16);
-
-            //regular pacman
+            // draw mouth
             fill(0);
             if (this.dying === 0) {
-                //mouth
                 if (this.mouth) {
                     switch (this.direction) {
                         case "left":
-                            //arc(cent.x, cent.y, 16, 16, (5.0 / 6.0) * PI, (7.0 / 6.0) * PI);
                             startAngle = (5.0 / 6.0) * PI;
                             endAngle = (7.0 / 6.0) * PI;
                             break;
                         case "down":
-                            //arc(cent.x, cent.y, 16, 16, PI / 3.0, (2.0 / 3.0) * PI);
                             startAngle = PI / 3.0;
                             endAngle = (2.0 / 3.0) * PI;
                             break;
                         case "right":
-                            //arc(cent.x, cent.y, 16, 16, (11.0 / 6.0) * PI, PI / 6.0);
                             startAngle = (11.0 / 6.0) * PI;
                             endAngle = PI / 6.0;
                             break;
                         case "up":
-                            //arc(cent.x, cent.y, 16, 16, (4.0 / 3.0) * PI, (5.0 / 3.0) * PI);
                             startAngle = (4.0 / 3.0) * PI;
                             endAngle = (5.0 / 3.0) * PI;
                             break;
@@ -227,9 +214,7 @@ class Pacman {
     }
 }
 
-/* (define-struct ghost [type direction position frightened scatter timer])
-
-A Ghost is a new Ghost(String, Dir, Posn, Nat, Boolean, Nat)
+/* A Ghost is a new Ghost(String, Dir, Posn, Nat, Boolean, Nat)
 Interpretation: The state of a ghost, where:
  - type represents the type of the ghost ("blinky", "pinky", "inky", or "clyde"),
  - direction represents the direction of the ghost (up/down/left/right),
@@ -253,8 +238,7 @@ class Ghost {
             noStroke();
             if (this.frightened > 0) {
                 fill(0, 0, 255);
-            }
-            else {
+            } else {
                 switch (this.type) {
                     case "blinky":
                         fill(255, 0, 0);
@@ -335,8 +319,37 @@ class Ghost {
         };
 
         this.update = function (pacman, gc) {
-            //update direction
-            var goal;
+            // update direction
+            var goal = this.getGoal(pacman, gc);
+            var possibleDirections = this.getPossibleDirections(gc);
+            this.direction = this.pickNewDirection(goal, possibleDirections, gc);
+            // move
+            this.position.update(this.direction, gc.width, gc.height);
+            // update clock
+            if (this.scatter && (this.timer >= GHOSTSCATTERTIME)) {
+                this.frightened = max(0, this.frightened - 0.5);
+                this.scatter = false;
+                this.timer = 0;
+            } else if (!this.scatter && (this.timer >= GHOSTCHASETIME)) {
+                this.frightened = max(0, this.frightened - 0.5);
+                this.scatter = true;
+                this.timer = 0;
+            } else {
+                this.frightened = max(0, this.frightened - 0.5);
+                this.timer += 1;
+            }
+            // if back to start -> reset ghost
+            if (this.position.x >= 9 && this.position.x <= 16 &&
+                this.position.y >= 12 && this.position.y <= 15) {
+                this.eaten = false;
+                this.frightened = 0;
+                this.direction = "left";
+                this.scatter = true;
+                this.timer = 0;
+            }
+        };
+
+        this.getPossibleDirections = function (gc) {
             var currentCell = getCell(this.position, gc.board);
             var allDirections = ["left", "right", "up", "down"];
             var possibleDirections = [];
@@ -346,12 +359,17 @@ class Ghost {
                     && (!(currentCell.walls.includes(direction)))) {
                     possibleDirections.push(allDirections[i]);
                 }
-                // special condition for going back into grid
-                if (this.eaten && (this.position.x === 12 || this.position.x === 13)
-                    && this.position.y === 11) {
-                        possibleDirections = ["down"];
-                }
             }
+            // special condition for going back into grid
+            if (this.eaten && (this.position.x === 12 || this.position.x === 13)
+                && this.position.y === 11) {
+                possibleDirections = ["down"];
+            }
+            return possibleDirections;
+        };
+
+        this.getGoal = function (pacman, gc) {
+            var goal;
             // if being eaten -> return to start
             if (this.eaten) {
                 switch (this.type) {
@@ -368,9 +386,7 @@ class Ghost {
                         goal = new Posn(13, 13);
                         break;
                 }
-            }
-            //if in box
-            else if (this.position.x >= 9 && this.position.x <= 16 &&
+            } else if (this.position.x >= 9 && this.position.x <= 16 && //if in box 
                 this.position.y >= 12 && this.position.y <= 15) {
                 goal = new Posn(12, 11);
             } else if (this.scatter) { //scatter mode
@@ -416,31 +432,7 @@ class Ghost {
                         break;
                 }
             }
-            this.direction = this.pickNewDirection(goal, possibleDirections, gc);
-            //move
-            this.position.update(this.direction, gc.width, gc.height);
-            //clock
-            if (this.scatter && (this.timer >= GHOSTSCATTERTIME)) {
-                this.frightened = max(0, this.frightened - 0.5);
-                this.scatter = false;
-                this.timer = 0;
-            } else if (!this.scatter && (this.timer >= GHOSTCHASETIME)) {
-                this.frightened = max(0, this.frightened - 0.5);
-                this.scatter = true;
-                this.timer = 0;
-            } else {
-                this.frightened = max(0, this.frightened - 0.5);
-                this.timer += 1;
-            }
-            // if back to start -> reset ghost
-            if (this.position.x >= 9 && this.position.x <= 16 &&
-                this.position.y >= 12 && this.position.y <= 15) {
-                this.eaten = false;
-                this.frightened = 0;
-                this.direction = "left";
-                this.scatter = true;
-                this.timer = 0;
-            }
+            return goal;
         };
 
         //picks direction which minimizes distance to goal
@@ -468,9 +460,7 @@ class Ghost {
     }
 }
 
-/* (define-struct game-of-pacman [pacman ghosts gc])
-
-A GameOfPacman is a new PacmanGame(Pacman, [List-of Ghost], GameConfiguration)
+/* A GameOfPacman is a new PacmanGame(Pacman, [List-of Ghost], GameConfiguration)
 Interpretation: The state of a pacman game, where
  - pacman is the pacman on the board
  - ghosts is the list of ghosts in the game, and
@@ -514,15 +504,7 @@ class PacmanGame {
         };
 
         this.update = function () {
-
-
-            // if pac dying --> keep on dying
-            // otherwise, go do that voodoo that you do so well
-
-
-
-            // if going to pass a ghost --> update pacman and check collisions
-            // otherwise --> update both and check collisions
+            // if pacman is dying --> keep on dying
             if (this.pacman.dying > 0) {
                 console.log("dying :)");
                 this.pacman.dying--;
@@ -530,6 +512,7 @@ class PacmanGame {
                 if (this.pacman.dying === 0) {
                     this.pacman.lives = max(this.pacman.lives - 1, 0);
                 }
+                // pacman done dying --> reset board
                 if (this.pacman.lives > 0 && this.pacman.dying === 0) {
                     //reset pacman
                     this.pacman.mouth = true;
@@ -541,43 +524,15 @@ class PacmanGame {
                     this.ghosts[2] = new Ghost("inky", "", new Posn(12, 14), 0, true, 0);
                     this.ghosts[3] = new Ghost("pinky", "", new Posn(13, 13), 0, true, 0);
                 }
-            } else if (swappingWithAny(this.pacman, this.ghosts)) {
+            } else if (swappingWithAny(this.pacman, this.ghosts)) { // if going to pass ghost --> move pacman then collide
                 this.pacman.update(this.gc);
                 checkCollisions(this.pacman, this.ghosts, this.gc);
                 updateGhosts(this.ghosts, this.pacman, this.gc);
-            } else if (this.pacman.direction != "" && this.pacman.lives > 0) {
+            } else if (this.pacman.direction != "" && this.pacman.lives > 0) { // otherwise --> move both and collide
                 this.pacman.update(this.gc);
                 updateGhosts(this.ghosts, this.pacman, this.gc);
                 checkCollisions(this.pacman, this.ghosts, this.gc);
             }
-
-
-            /*
-            // CHECK COLLISIONS BEFORE MOVING
-            checkCollisions(this.pacman, this.ghosts, this.gc);
-            
-            // CHECK IF PACMAN AND GHOST PASSED EACH OTHER
-            for (var i = 0; i < this.ghosts; i++) {
-                if (swappingPositions(pacman.position, pacman.direction, this.ghosts[i].position, this.ghosts[i].direction, gc)) {
-                    this.pacman.update(this.gc);
-                    checkCollisions(this.pacman, this.ghosts, this.gc);
-                    //updateGhosts(this.ghosts, this.pacman, this.gc);
-                    break;
-                }
-            }
-            
-            // UPDATE
-            if (this.pacman.direction != "" && this.pacman.lives > 0) {
-                updateGhosts(this.ghosts, this.pacman, this.gc);
-                this.pacman.update(this.gc);
-                //checkCollisions(this.pacman, this.ghosts, this.gc);
-            }
-
-
-           
-            
-            //checkCollisions(this.pacman, this.ghosts, this.gc.dots, this.gc.powers, this.gc.ghostStarts, this.gc.start);
-           */
         };
     }
 }
